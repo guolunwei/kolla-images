@@ -1,0 +1,42 @@
+# This workflow will pull kolla ansible docker images from dockerhub, push it to aliyun container registry.
+#
+# To configure this workflow:
+#
+# 1. Set up secrets in your workspace: 
+#    - ALIYUN_USERNAME with aliyun registry username
+#    - ALIYUN_PASSWORD with aliyun registry password
+#
+# 2. Change the values for the ALIYUN_REGISTRY, ALIYUN_NAMESPACE environment variables (below).
+
+name: Sync to Aliyun container registry
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  DOCKER_NAMESPACE: kolla
+  KOLLA_BASE_DISTRO: ubuntu
+  INSTALL_TYPE: binary
+  OPENSTACK_RELEASE: train
+  ALIYUN_REGISTRY: registry.cn-guangzhou.aliyuncs.com
+  ALIYUN_NAMESPACE: lunwei
+
+jobs:
+  get-kolla-images:
+  
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+      
+    - name: Log into aliyun registry
+      run: echo "${{ secrets.ALIYUN_PASSWORD }}" | docker login $ALIYUN_REGISTRY --username=${{ secrets.ALIYUN_USERNAME }} --password-stdin
+      
+    - name: Syncing images
+      run: |
+        sed -i "s#USER#${{ secrets.ALIYUN_USERNAME }}#g" config.json
+        sed -i "s#PASS#${{ secrets.ALIYUN_PASSWORD }}#g" config.json
+        wget https://github.com/AliyunContainerService/image-syncer/releases/download/v1.3.1/image-syncer-v1.3.1-linux-amd64.tar.gz
+        tar -zxvf image-syncer-v1.3.1-linux-amd64.tar.gz
+        ./image-syncer --proc=50 --config=./config.json --registry=registry.cn-guangzhou.aliyuncs.com --namespace=lunwei --retries=2 --log=./log
