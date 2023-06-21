@@ -23,7 +23,7 @@ env:
   ALIYUN_NAMESPACE: lunwei
 
 jobs:
-  get-kolla-images:
+  sync-kolla-images:
   
     runs-on: ubuntu-latest
     steps:
