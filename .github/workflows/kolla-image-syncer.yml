@@ -15,10 +15,6 @@ on:
     branches: [ "main" ]
 
 env:
-  DOCKER_NAMESPACE: kolla
-  KOLLA_BASE_DISTRO: ubuntu
-  INSTALL_TYPE: binary
-  OPENSTACK_RELEASE: train
   ALIYUN_REGISTRY: registry.cn-guangzhou.aliyuncs.com
   ALIYUN_NAMESPACE: lunwei
 
@@ -39,4 +35,4 @@ jobs:
         sed -i "s#PASS#${{ secrets.ALIYUN_PASSWORD }}#g" config.json
         wget https://github.com/AliyunContainerService/image-syncer/releases/download/v1.3.1/image-syncer-v1.3.1-linux-amd64.tar.gz
         tar -zxvf image-syncer-v1.3.1-linux-amd64.tar.gz
-        ./image-syncer --proc=50 --config=./config.json --registry=registry.cn-guangzhou.aliyuncs.com --namespace=lunwei --retries=2 --log=./log
+        ./image-syncer --proc=50 --config=./config.json --registry=${{ env.ALIYUN_REGISTRY }} --namespace=${{ env.ALIYUN_NAMESPACE }} --retries=2 --log=./log
